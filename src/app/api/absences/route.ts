@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabase } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'from and to are required' }, { status: 400 })
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('absences')
     .select('*')
     .gte('date', from)
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const { person, date, meal } = await request.json()
 
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('absences')
     .insert({ person, date, meal })
     .select()
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const { person, date, meal } = await request.json()
 
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from('absences')
     .delete()
     .match({ person, date, meal })
