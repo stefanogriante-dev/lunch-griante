@@ -1,0 +1,49 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getSupabase } from '@/lib/supabase'
+
+export const dynamic = 'force-dynamic'
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const from = searchParams.get('from')
+  const to = searchParams.get('to')
+
+  if (!from || !to) {
+    return NextResponse.json({ error: 'from and to are required' }, { status: 400 })
+  }
+
+  const { data, error } = await getSupabase()
+    .from('taverna')
+    .select('*')
+    .gte('date', from)
+    .lte('date', to)
+    .order('date')
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data)
+}
+
+export async function POST(request: NextRequest) {
+  const { person, date, slot } = await request.json()
+
+  const { data, error } = await getSupabase()
+    .from('taverna')
+    .insert({ person, date, slot })
+    .select()
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json(data)
+}
+
+export async function DELETE(request: NextRequest) {
+  const { person, date, slot } = await request.json()
+
+  const { error } = await getSupabase()
+    .from('taverna')
+    .delete()
+    .match({ person, date, slot })
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ success: true })
+}
